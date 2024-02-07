@@ -317,7 +317,7 @@ class LightGlue(nn.Module):
         "input_dim": 256,  # input descriptor dimension (autoselected from weights)
         "descriptor_dim": 256,
         "add_scale_ori": False,
-        "n_layers": 9,
+        "n_layers": 9, # number of layers
         "num_heads": 4,
         "flash": True,  # enable FlashAttention if available.
         "mp": False,  # enable mixed precision
@@ -368,6 +368,7 @@ class LightGlue(nn.Module):
 
     def __init__(self, features="superpoint", **conf) -> None:
         super().__init__()
+        # args
         self.conf = conf = SimpleNamespace(**{**self.default_conf, **conf})
         if features is not None:
             if features not in self.features:
@@ -384,6 +385,7 @@ class LightGlue(nn.Module):
             self.input_proj = nn.Identity()
 
         head_dim = conf.descriptor_dim // conf.num_heads
+        # Positional encoding 
         self.posenc = LearnableFourierPositionalEncoding(
             2 + 2 * self.conf.add_scale_ori, head_dim, head_dim
         )
@@ -432,6 +434,7 @@ class LightGlue(nn.Module):
     def compile(
         self, mode="reduce-overhead", static_lengths=[256, 512, 768, 1024, 1280, 1536]
     ):
+        # width_confidence = -1 is do not point pruning 
         if self.conf.width_confidence != -1:
             warnings.warn(
                 "Point pruning is partially disabled for compiled forward.",
